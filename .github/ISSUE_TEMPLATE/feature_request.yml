@@ -1,0 +1,19 @@
+name: 功能建议
+description: 建议新的排盘能力、交互或工程改进
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: 使用场景
+      description: 你在什么情况下需要这个功能？
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案
+      description: 如果你有具体的交互、规则或 API 设计建议，请写在这里。
+    validations:
+      required: false

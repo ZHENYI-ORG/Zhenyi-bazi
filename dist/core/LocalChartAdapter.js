@@ -1,0 +1,131 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LocalChartAdapter = void 0;
+const LocalPaipan_1 = require("./LocalPaipan");
+const TrueSolarTimeCalculator_1 = require("./TrueSolarTimeCalculator");
+const WuXingScorer_1 = require("./WuXingScorer");
+const ShenShaMatcher_1 = require("./ShenShaMatcher");
+const SHI_SHEN_FULL = { 比: '比肩', 劫: '劫财', 食: '食神', 伤: '伤官', 财: '偏财', 才: '正财', 杀: '七杀', 官: '正官', 枭: '偏印', 印: '正印' };
+const STEM_ELEMENT = { 甲: '木', 乙: '木', 丙: '火', 丁: '火', 戊: '土', 己: '土', 庚: '金', 辛: '金', 壬: '水', 癸: '水' };
+const STEM_YIN_YANG = { 甲: '阳', 乙: '阴', 丙: '阳', 丁: '阴', 戊: '阳', 己: '阴', 庚: '阳', 辛: '阴', 壬: '阳', 癸: '阴' };
+const HIDDEN_STEMS = { 子: ['癸'], 丑: ['己', '癸', '辛'], 寅: ['甲', '丙', '戊'], 卯: ['乙'], 辰: ['戊', '乙', '癸'], 巳: ['丙', '戊', '庚'], 午: ['丁', '己'], 未: ['己', '丁', '乙'], 申: ['庚', '戊', '壬'], 酉: ['辛'], 戌: ['戊', '辛', '丁'], 亥: ['壬', '甲'] };
+const TWELVE_STAGES = {
+    甲: { 亥: '长生', 子: '沐浴', 丑: '冠带', 寅: '临官', 卯: '帝旺', 辰: '衰', 巳: '病', 午: '死', 未: '墓', 申: '绝', 酉: '胎', 戌: '养' },
+    乙: { 午: '长生', 巳: '沐浴', 辰: '冠带', 卯: '临官', 寅: '帝旺', 丑: '衰', 子: '病', 亥: '死', 戌: '墓', 酉: '绝', 申: '胎', 未: '养' },
+    丙: { 寅: '长生', 卯: '沐浴', 辰: '冠带', 巳: '临官', 午: '帝旺', 未: '衰', 申: '病', 酉: '死', 戌: '墓', 亥: '绝', 子: '胎', 丑: '养' },
+    丁: { 酉: '长生', 申: '沐浴', 未: '冠带', 午: '临官', 巳: '帝旺', 辰: '衰', 卯: '病', 寅: '死', 丑: '墓', 子: '绝', 亥: '胎', 戌: '养' },
+    戊: { 寅: '长生', 卯: '沐浴', 辰: '冠带', 巳: '临官', 午: '帝旺', 未: '衰', 申: '病', 酉: '死', 戌: '墓', 亥: '绝', 子: '胎', 丑: '养' },
+    己: { 酉: '长生', 申: '沐浴', 未: '冠带', 午: '临官', 巳: '帝旺', 辰: '衰', 卯: '病', 寅: '死', 丑: '墓', 子: '绝', 亥: '胎', 戌: '养' },
+    庚: { 巳: '长生', 午: '沐浴', 未: '冠带', 申: '临官', 酉: '帝旺', 戌: '衰', 亥: '病', 子: '死', 丑: '墓', 寅: '绝', 卯: '胎', 辰: '养' },
+    辛: { 子: '长生', 亥: '沐浴', 戌: '冠带', 酉: '临官', 申: '帝旺', 未: '衰', 午: '病', 巳: '死', 辰: '墓', 卯: '绝', 寅: '胎', 丑: '养' },
+    壬: { 申: '长生', 酉: '沐浴', 戌: '冠带', 亥: '临官', 子: '帝旺', 丑: '衰', 寅: '病', 卯: '死', 辰: '墓', 巳: '绝', 午: '胎', 未: '养' },
+    癸: { 卯: '长生', 寅: '沐浴', 丑: '冠带', 子: '临官', 亥: '帝旺', 戌: '衰', 酉: '病', 申: '死', 未: '墓', 午: '绝', 巳: '胎', 辰: '养' }
+};
+const NAYIN = { '甲子': '海中金', '乙丑': '海中金', '丙寅': '炉中火', '丁卯': '炉中火', '戊辰': '大林木', '己巳': '大林木', '庚午': '路旁土', '辛未': '路旁土', '壬申': '剑锋金', '癸酉': '剑锋金', '甲戌': '山头火', '乙亥': '山头火', '丙子': '涧下水', '丁丑': '涧下水', '戊寅': '城头土', '己卯': '城头土', '庚辰': '白蜡金', '辛巳': '白蜡金', '壬午': '杨柳木', '癸未': '杨柳木', '甲申': '泉中水', '乙酉': '泉中水', '丙戌': '屋上土', '丁亥': '屋上土', '戊子': '霹雳火', '己丑': '霹雳火', '庚寅': '松柏木', '辛卯': '松柏木', '壬辰': '长流水', '癸巳': '长流水', '甲午': '砂石金', '乙未': '砂石金', '丙申': '山下火', '丁酉': '山下火', '戊戌': '平地木', '己亥': '平地木', '庚子': '壁上土', '辛丑': '壁上土', '壬寅': '金箔金', '癸卯': '金箔金', '甲辰': '覆灯火', '乙巳': '覆灯火', '丙午': '天河水', '丁未': '天河水', '戊申': '大驿土', '己酉': '大驿土', '庚戌': '钗钏金', '辛亥': '钗钏金', '壬子': '桑柘木', '癸丑': '桑柘木', '甲寅': '大溪水', '乙卯': '大溪水', '丙辰': '沙中土', '丁巳': '沙中土', '戊午': '天上火', '己未': '天上火', '庚申': '石榴木', '辛酉': '石榴木', '壬戌': '大海水', '癸亥': '大海水' };
+class LocalChartAdapter {
+    paipan = new LocalPaipan_1.LocalPaipan();
+    compute(profile) {
+        const solarBirthday = this.resolveSolarBirthday(profile), birthTime = profile.birth_time ?? '12:00', gender = (profile.gender === 'male' || profile.gender === 0) ? 0 : 1;
+        const longitude = TrueSolarTimeCalculator_1.TrueSolarTimeCalculator.resolveBirthLongitude(profile);
+        if (longitude === null)
+            throw new Error('无法解析出生地经度，请填写出生地或经纬度');
+        const solarResult = TrueSolarTimeCalculator_1.TrueSolarTimeCalculator.calculate(solarBirthday, birthTime, longitude), [yy, mm, dd, hh, mt] = solarResult.parts;
+        const info = this.paipan.GetInfo(gender, yy, mm, dd, hh, mt, 0);
+        if (!info || !Object.keys(info).length)
+            throw new Error('本地排盘计算失败: GetInfo返回空');
+        return this.formatResult(info, profile, solarResult, gender, solarBirthday);
+    }
+    resolveSolarBirthday(profile) {
+        const birthday = String(profile.birthday ?? '').trim().split(' ')[0];
+        if (!Number(profile.is_lunar ?? 0))
+            return birthday;
+        const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(birthday);
+        if (!m)
+            throw new Error('出生日期格式无效: ' + birthday);
+        const solar = this.paipan.Lunar2Solar(+m[1], +m[2], +m[3], Number(profile.is_leap ?? 0));
+        if (!solar || solar.length < 3)
+            throw new Error(`农历转公历失败: ${+m[1]}-${+m[2]}-${+m[3]}${Number(profile.is_leap ?? 0) ? '（闰月）' : ''}`);
+        return `${solar[0].toString().padStart(4, '0')}-${solar[1].toString().padStart(2, '0')}-${solar[2].toString().padStart(2, '0')}`;
+    }
+    formatResult(info, profile, solarResult, gender, solarBirthday) {
+        const p = this.paipan, s = p.ctg, b = p.cdz;
+        const ys = s[info.tg[0]], yb = b[info.dz[0]], ms = s[info.tg[1]], mb = b[info.dz[1]], ds = s[info.tg[2]], db = b[info.dz[2]], hs = s[info.tg[3]], hb = b[info.dz[3]];
+        const shi_shen = { year_stem: this.getShiShen(ds, ys), year_branch: this.getShiShen(ds, HIDDEN_STEMS[yb]?.[0] ?? ys), month_stem: this.getShiShen(ds, ms), month_branch: this.getShiShen(ds, HIDDEN_STEMS[mb]?.[0] ?? ms), day_stem: '日元', day_branch: this.getShiShen(ds, HIDDEN_STEMS[db]?.[0] ?? ds), hour_stem: this.getShiShen(ds, hs), hour_branch: this.getShiShen(ds, HIDDEN_STEMS[hb]?.[0] ?? hs) };
+        const hidden_stems = {};
+        for (const [pos, branch] of Object.entries({ year: yb, month: mb, day: db, hour: hb }))
+            hidden_stems[pos] = this.buildHiddenStemsForBranch(ds, String(branch));
+        const elements = { 金: 0, 木: 0, 水: 0, 火: 0, 土: 0 };
+        for (const st of [ys, ms, ds, hs])
+            if (STEM_ELEMENT[st])
+                elements[STEM_ELEMENT[st]]++;
+        for (const br of [yb, mb, db, hb]) {
+            const st = HIDDEN_STEMS[br]?.[0];
+            if (st && STEM_ELEMENT[st])
+                elements[STEM_ELEMENT[st]]++;
+        }
+        const missing = Object.entries(elements).filter(([, v]) => v === 0).map(([k]) => k), summary = missing.length ? '五行缺' + missing.join('、') : '五行俱全';
+        const yp = ys + yb, mp = ms + mb, dp = ds + db, hp = hs + hb, nayin = { year: NAYIN[yp] ?? '未知', month: NAYIN[mp] ?? '未知', day: NAYIN[dp] ?? '未知', hour: NAYIN[hp] ?? '未知' };
+        const kong_wang = { year: this.calcKongWang(yp), month: this.calcKongWang(mp), day: this.calcKongWang(dp), hour: this.calcKongWang(hp) };
+        const zi_zuo = { year: TWELVE_STAGES[ys]?.[yb] ?? '', month: TWELVE_STAGES[ms]?.[mb] ?? '', day: TWELVE_STAGES[ds]?.[db] ?? '', hour: TWELVE_STAGES[hs]?.[hb] ?? '' };
+        const xing_yun = { year: TWELVE_STAGES[ds]?.[yb] ?? '', month: TWELVE_STAGES[ds]?.[mb] ?? '', day: TWELVE_STAGES[ds]?.[db] ?? '', hour: TWELVE_STAGES[ds]?.[hb] ?? '' };
+        const birthYear = +solarBirthday.slice(0, 4), da_yun = this.buildDaYun(info, ds, birthYear), wx = info.wx_fen ?? [0, 0, 0, 0, 0], wxScore = { 木: +Number(wx[0] ?? 0).toFixed(4), 火: +Number(wx[1] ?? 0).toFixed(4), 土: +Number(wx[2] ?? 0).toFixed(4), 金: +Number(wx[3] ?? 0).toFixed(4), 水: +Number(wx[4] ?? 0).toFixed(4) };
+        const taiyuan = this.calcTaiYuan(ms, mb), minggong = info.gong?.char ?? '', shenggong = info.shen_gong?.char ?? '', taixi = info.tai_xi?.char ?? '', jieqi = this.buildJieQiInfo(info);
+        return { profile_id: profile.id ?? 0, source: 'local', bazi: { year_pillar: { heavenly_stem: ys, earthly_branch: yb }, month_pillar: { heavenly_stem: ms, earthly_branch: mb }, day_pillar: { heavenly_stem: ds, earthly_branch: db }, hour_pillar: { heavenly_stem: hs, earthly_branch: hb } }, shi_shen, hidden_stems, five_elements: { metal: elements.金, wood: elements.木, water: elements.水, fire: elements.火, earth: elements.土, summary }, nayin, da_yun, xiao_yun: this.buildXiaoYun(info, gender, 110), shen_sha: { year: [], month: [], day: [], hour: [] }, kong_wang, zi_zuo, xing_yun, day_master: { stem: ds, element: STEM_ELEMENT[ds] ?? '', yin_yang: STEM_YIN_YANG[ds] ?? '', description: `日主${ds}${STEM_ELEMENT[ds] ?? ''}` }, taiyuan, minggong, shenggong, taixi, taiyuan_nayin: NAYIN[taiyuan] ?? '', minggong_nayin: NAYIN[minggong] ?? '', shenggong_nayin: NAYIN[shenggong] ?? '', taixi_nayin: NAYIN[taixi] ?? '', animal: info.sx ?? '', lunar: { year: info.lunar_year ?? '', month: info.lunar_month ?? '', day: info.lunar_day ?? '', hour: b[info.dz[3]] + '时' }, jieqi, jieqi_desc: jieqi.jieqi_desc ?? '', prev_jie: jieqi.prev_jie ?? null, next_jie: jieqi.next_jie ?? null, solar_time: `${solarResult.date} ${solarResult.time}`, qiyun: this.parseQiyun(info.start_desc ?? ''), qiyunsui: info.start_time?.[0] && birthYear > 0 ? Math.max(1, Number(info.start_time[0]) - birthYear + 1) : 0, jiaoyun: { year: info.start_time?.[0] ?? '', month: info.start_time?.[1] ?? '', day: info.start_time?.[2] ?? '', desc: info.jiaoyun_desc ?? '' }, wu_xing_score: wxScore, wx_fen: wx, day_master_strength: WuXingScorer_1.WuXingScorer.judgeDayMasterStrength(info.tg[2], wxScore) };
+    }
+    buildDaYun(info, dayStem, birthYear) { const s = this.paipan.ctg, b = this.paipan.cdz, jy = Number(info.start_time?.[0] ?? 0), startAge = jy && birthYear ? jy - birthYear + 1 : 0, out = []; const n = Math.min((info.big ?? info.big_tg ?? []).length || 12, 12); for (let i = 0; i < n; i++) {
+        const st = s[info.big_tg[i]], br = b[info.big_dz[i]], bst = info.big_start_time?.[i], year = bst ? Number(bst[0]) : (jy ? jy + 10 * i : 0), age = year && birthYear ? year - birthYear + 1 : startAge + 10 * i, pillar = st + br;
+        out.push({ index: i + 1, pillar, heavenly_stem: st, earthly_branch: br, start_age: age, end_age: age + 9, start_year: year, stem_shi_shen: this.getShiShen(dayStem, st), branch_shi_shen: this.getShiShen(dayStem, HIDDEN_STEMS[br]?.[0] ?? st), nayin: NAYIN[pillar] ?? '', hidden_stems: this.buildHiddenStemsForBranch(dayStem, br), shen_sha: [] });
+    } for (const dy of out) {
+        const list = [];
+        if (dy.start_year)
+            for (let j = 0; j < 10; j++) {
+                const year = dy.start_year + j, age = birthYear ? year - birthYear + 1 : dy.start_age + j, si = ((year - 4) % 10 + 10) % 10, bi = ((year - 4) % 12 + 12) % 12, st = s[si], br = b[bi], pillar = st + br;
+                list.push({ ganzhi: pillar, heavenly_stem: st, earthly_branch: br, year, age: `${age}岁`, stem_shi_shen: this.getShiShen(dayStem, st), branch_shi_shen: this.getShiShen(dayStem, HIDDEN_STEMS[br]?.[0] ?? st), nayin: NAYIN[pillar] ?? '', hidden_stems: this.buildHiddenStemsForBranch(dayStem, br) });
+            }
+        dy.liu_nian = list;
+    } return out; }
+    buildXiaoYun(info, gender, count = 100) { const s = this.paipan.ctg, b = this.paipan.cdz, hg = info.tg?.[3] ?? 0, hb = info.dz?.[3] ?? 0, yg = info.tg?.[0] ?? 0, yang = yg % 2 === 0, forward = (gender === 0 && yang) || (gender === 1 && !yang), step = forward ? 1 : -1, out = []; for (let i = 1; i <= count; i++)
+        out.push(s[((hg + step * i) % 10 + 10) % 10] + b[((hb + step * i) % 12 + 12) % 12]); return out; }
+    buildHiddenStemsForBranch(dayStem, branch) { const labels = ['本气', '中气', '余气']; return (HIDDEN_STEMS[branch] ?? []).map((stem, i) => ({ stem, label: labels[i] ?? '', element: STEM_ELEMENT[stem] ?? '', shi_shen: this.getShiShen(dayStem, stem) })); }
+    getShiShen(dayStem, otherStem) { if (dayStem === otherStem)
+        return '比肩'; const a = this.paipan.ctg.indexOf(dayStem), b = this.paipan.ctg.indexOf(otherStem); if (a < 0 || b < 0)
+        return ''; const r = this.paipan.GetTenGod(a, b); return SHI_SHEN_FULL[r.char] ?? r.char ?? ''; }
+    calcKongWang(pillar) { const s = this.paipan.ctg, b = this.paipan.cdz, c = Array.from(pillar); if (c.length < 2)
+        return ''; const si = s.indexOf(c[0]), bi = b.indexOf(c[1]); if (si < 0 || bi < 0)
+        return ''; const start = (bi - si + 12) % 12; return b[(start + 10) % 12] + b[(start + 11) % 12]; }
+    calcTaiYuan(ms, mb) { const s = this.paipan.ctg, b = this.paipan.cdz, si = s.indexOf(ms), bi = b.indexOf(mb); return si < 0 || bi < 0 ? '' : s[(si + 1) % 10] + b[(bi + 3) % 12]; }
+    parseQiyun(desc) { const val = (re) => Number(re.exec(desc)?.[1] ?? 0); return { year: val(/(\d+)年/), month: val(/(\d+)月/), day: val(/(\d+)天/), hour: val(/(\d+)时/) }; }
+    ;
+    buildJieQiInfo(info) { const names = ['小寒', '立春', '惊蛰', '清明', '立夏', '芒种', '小暑', '立秋', '白露', '寒露', '立冬', '大雪', '小寒', '立春', '惊蛰', '清明'], jq = info.jq_table ?? [], ix = info.jq_ix, jd = info.birth_jd; if (ix === null || ix === undefined || jd === null || jd === undefined || !jq.length || jq[ix] === undefined || jq[ix + 1] === undefined)
+        return { prev_jie: null, next_jie: null, jieqi_desc: '' }; const prev = jq[ix], next = jq[ix + 1], pn = names[ix] ?? '', nn = names[ix + 1] ?? '', pd = this.jdToDateString(prev), nd = this.jdToDateString(next), pdays = jd - prev, ndays = next - jd, pdi = Math.floor(pdays), phi = Math.floor((pdays - pdi) * 24), ndi = Math.floor(ndays), nhi = Math.floor((ndays - ndi) * 24); return { prev_jie: { name: pn, date: pd }, next_jie: { name: nn, date: nd }, jieqi_desc: `出生于${pn}后${pdi}天${phi}小时，${nn}前${ndi}天${nhi}小时` }; }
+    jdToDateString(jd) { const a = this.paipan.Julian2Solar(jd); if (!a || a.length < 6)
+        return ''; return `${String(a[0]).padStart(4, '0')}-${String(a[1]).padStart(2, '0')}-${String(a[2]).padStart(2, '0')} ${String(a[3]).padStart(2, '0')}:${String(a[4]).padStart(2, '0')}:${String(a[5]).padStart(2, '0')}`; }
+    computeShenSha(chartData, gender = 0) { const b = chartData.bazi ?? {}, input = {}; for (const [cn, en] of Object.entries({ '年柱': 'year_pillar', '月柱': 'month_pillar', '日柱': 'day_pillar', '时柱': 'hour_pillar' })) {
+        const p = b[en] ?? {};
+        input[cn] = { gan: p.heavenly_stem ?? '', zhi: p.earthly_branch ?? '' };
+    } const matcher = new ShenShaMatcher_1.ShenShaMatcher(), main = matcher.matchAll(input, [], { gender: String(gender) }), dayun = [], liunian = []; for (let i = 0; i < (chartData.da_yun ?? []).length; i++) {
+        const step = chartData.da_yun[i], c = Array.from(step.pillar ?? '');
+        if (c.length < 2)
+            continue;
+        const extra = { '大运': { gan: c[0], zhi: c[1] } }, matches = matcher.matchAll(input, extra, { gender: String(gender) }), names = [];
+        for (const r of matches)
+            for (const m of r.matches ?? [])
+                if (m.target_pillar === '大运' && r.name && !names.includes(r.name))
+                    names.push(r.name);
+        dayun.push([step.pillar, names]);
+        const each = {};
+        for (const ln of step.liu_nian ?? []) {
+            const lc = Array.from(ln.ganzhi ?? '');
+            if (lc.length < 2)
+                continue;
+            const ex = { '大运': { gan: c[0], zhi: c[1] }, '流年': { gan: lc[0], zhi: lc[1] } }, lm = matcher.matchAll(input, ex, { gender: String(gender) }), nms = [];
+            for (const r of lm)
+                for (const m of r.matches ?? [])
+                    if (m.target_pillar === '流年' && r.name && !nms.includes(r.name))
+                        nms.push(r.name);
+            each[Number(ln.year)] = [ln.ganzhi, nms];
+        }
+        liunian[i] = each;
+    } return { main, dayun, liunian }; }
+}
+exports.LocalChartAdapter = LocalChartAdapter;

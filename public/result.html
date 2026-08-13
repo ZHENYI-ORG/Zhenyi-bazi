@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>八字命盘</title>
+<style>
+:root{
+  --ink:#171717;--muted:#8e8e8e;--light:#b9b9b9;--line:#ececec;--soft:#f7f7f7;
+  --gold:#b69a61;--gold2:#947338;--gold-soft:#f7f1e5;--gold-line:#e4d5b5;
+  --flow:#fbf7ee;--luck:#f5f2eb;--day:#fffaf0;
+  --wood:#21a268;--fire:#e24335;--earth:#b38634;--metal:#b59629;--water:#307ed0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink)
+}
+*{box-sizing:border-box}html,body{margin:0;min-width:320px;background:#f3f3f3}button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}[hidden]{display:none!important}
+.app{width:min(100%,520px);min-height:100dvh;margin:0 auto;background:#fff}
+.topbar{height:50px;display:flex;align-items:center;justify-content:center;background:#fff;position:sticky;top:0;z-index:30;border-bottom:1px solid #f3f3f3}
+.topbar>b{font-size:17px;font-weight:650}.back,.redo,.save-result{height:38px;border:0;background:transparent;color:#333}.back{position:absolute;left:6px;width:40px}.back:before{content:"";position:absolute;width:9px;height:9px;border-left:1.5px solid #222;border-bottom:1.5px solid #222;transform:rotate(45deg);left:16px;top:14px}.top-actions{position:absolute;right:8px;display:flex;align-items:center}.redo,.save-result{font-size:12px;color:#777;padding:0 7px}.save-result{color:var(--gold2)}.save-result.saved{color:#aaa}
+.tabbar{height:44px;display:grid;grid-template-columns:repeat(3,1fr);background:#090909;position:sticky;top:50px;z-index:29}.tabbar button{border:0;background:transparent;color:#bdbdbd;font-size:13px;position:relative}.tabbar button.active{color:#fff;font-weight:650}.tabbar button.active:after{content:"";position:absolute;left:27%;right:27%;bottom:0;height:2px;background:var(--gold)}
+.page{padding:0 0 34px}.view{display:none}.view.active{display:block}.info-layout{display:block}.info-primary,.info-secondary{min-width:0}.desktop-panel{background:#fff}
+.profile-card{background:linear-gradient(135deg,#171717,#29251e);color:#fff;padding:18px 17px 16px;display:grid;grid-template-columns:54px 1fr;gap:13px;align-items:center}.seal{width:48px;height:48px;border:1px solid rgba(212,181,112,.72);border-radius:50%;display:grid;place-items:center;color:#d0ad66;font-family:"Songti SC",serif;font-size:22px;box-shadow:inset 0 0 0 4px rgba(212,181,112,.08)}.profile-card h1{font-size:18px;margin:0 0 5px;font-weight:650}.profile-card p{font-size:11px;color:#d5d0c8;margin:3px 0;line-height:16px}.profile-card .gold{color:#d1ae69}
+.info-list{padding:4px 16px 0}.info-item{min-height:45px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px}.info-item span{font-size:12px;color:#999}.info-item b{font-size:12px;font-weight:500;text-align:right;color:#333;max-width:72%;overflow-wrap:anywhere}.section-title{padding:19px 16px 9px;font-size:13px;font-weight:650;color:#333}.mini-bazi{margin:0 16px;border:1px solid #ececec;display:grid;grid-template-columns:repeat(4,1fr);border-radius:7px;overflow:hidden}.mini-col{padding:10px 4px;text-align:center;border-left:1px solid #eee}.mini-col:first-child{border-left:0}.mini-col.day{background:var(--day)}.mini-col small{display:block;font-size:9px;color:#aaa;margin-bottom:5px}.mini-col b{display:block;font-size:22px;line-height:25px;font-weight:700}.mini-col em{display:block;font-size:9px;color:#999;font-style:normal;margin-top:4px}.score-wrap{padding:0 16px}.score-row{height:29px;display:grid;grid-template-columns:34px 1fr 46px;align-items:center;gap:7px}.score-row span{font-size:11px;color:#666}.bar{height:6px;background:#f0f0f0;border-radius:6px;overflow:hidden}.bar i{height:100%;display:block;border-radius:6px;background:currentColor}.score-row b{font-size:10px;text-align:right;color:#888;font-weight:500}.aux-grid{margin:0 16px;display:grid;grid-template-columns:repeat(2,1fr);border:1px solid #eee;border-radius:7px;overflow:hidden}.aux{padding:10px;border-right:1px solid #eee;border-bottom:1px solid #eee;min-height:52px}.aux:nth-child(even){border-right:0}.aux:nth-last-child(-n+2){border-bottom:0}.aux small{display:block;color:#aaa;font-size:9px;margin-bottom:4px}.aux b{font-size:12px;font-weight:500;color:#3c3c3c}.info-secondary{padding-bottom:10px}
+.chart-summary{display:none}.chart-head{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;background:#fff}.chart-head span{font-size:10px;color:#999}.chart-head b{font-size:12px;font-weight:500;color:#725f38}.table-card{width:100%;overflow-x:auto;scrollbar-width:none;border-top:1px solid #eee;border-bottom:1px solid #eee;background:#fff;position:relative}.table-card::-webkit-scrollbar{display:none}
+.row{display:grid;grid-template-columns:42px repeat(4,minmax(61px,1fr));min-height:31px;border-bottom:1px solid #eee}.row:last-child{border-bottom:0}.row>span{min-width:0;border-left:1px solid #eee;display:grid;place-items:center;padding:6px 4px;text-align:center;color:#333;font-size:11px;line-height:15px;overflow-wrap:anywhere}.row>span:first-child{border-left:0;color:#a0a0a0;background:#fafafa;font-size:10px;position:sticky;left:0;z-index:4}.row.head>span{background:#fafafa;color:#777;font-weight:550}.row>span.day-col{background:var(--day)}.row.stems span:not(:first-child),.row.branches span:not(:first-child){font-size:22px;line-height:27px;font-weight:700}.hidden{display:block!important}.hidden i{font-style:normal;display:flex;justify-content:center;gap:2px;line-height:13px}.hidden i b{font-size:10px}.hidden i small{font-size:8px;color:#999}.shensha-cell{display:flex!important;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;padding:7px 4px!important}.sha-chip{display:inline-flex;align-items:center;min-height:18px;padding:2px 5px;border-radius:8px;background:#f8f3e8;color:#8a6b31;font-size:8px;line-height:12px;white-space:nowrap}.sha-empty{font-size:9px;color:#bbb}.wood{color:var(--wood)!important}.fire{color:var(--fire)!important}.earth{color:var(--earth)!important}.metal{color:var(--metal)!important}.water{color:var(--water)!important}
+.chart-note{padding:10px 15px 4px;color:#999;font-size:9px;line-height:15px}
+.flow-hero{padding:13px 14px 11px;background:#fbfaf7;border-bottom:1px solid #ece8df}.flow-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.flow-hero small{font-size:9px;color:#999;line-height:14px}.flow-hero strong{display:block;font-size:15px;color:#332b1e;margin-top:2px}.flow-hero strong b{font-size:20px;color:#8c6b2d;margin-right:5px}.flow-hero-meta{text-align:right}.flow-hero-meta b{display:block;color:#8a6e34;font-size:11px;font-weight:600;margin-top:3px}.flow-actions{display:grid;grid-template-columns:36px 1fr 72px 1fr 36px;gap:6px;align-items:center;margin-top:10px}.flow-actions button{height:30px;border:1px solid #e4ddcf;background:#fff;border-radius:7px;color:#6f6658;font-size:10px}.flow-actions .flow-select{display:flex;justify-content:space-between;align-items:center;padding:0 9px;color:#4b443a}.flow-actions .today{color:#8b6c31;background:#faf6ed;border-color:#ddcfb2}.flow-actions .arrow-btn{font-size:15px;color:#8c7b5d}
+.professional .row{min-width:560px;grid-template-columns:42px repeat(6,minmax(67px,1fr))}.professional .row>span:nth-child(2){background:var(--flow)}.professional .row>span:nth-child(3){background:var(--luck)}.professional .row.head>span:nth-child(2),.professional .row.head>span:nth-child(3){font-weight:650}.picker-trigger{border:0;background:transparent;color:#80693b;font-size:10px;padding:2px}.origin-head{font-size:8px;color:#aaa;display:block;margin-top:1px}
+.cycle-panel{margin-top:13px;border-top:1px solid #eee;border-bottom:1px solid #eee;background:#fff}.cycle-block+.cycle-block{border-top:1px solid #eee}.cycle-head{height:36px;padding:0 13px;display:flex;align-items:center;justify-content:space-between;background:#fafafa}.cycle-head b{font-size:11px;font-weight:600}.cycle-head span{font-size:9px;color:#aaa}.cycle-strip{display:flex;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity;padding:0 0 1px}.cycle-strip::-webkit-scrollbar{display:none}.cycle-strip button{width:58px;flex:0 0 58px;min-height:94px;border:0;border-right:1px solid #eee;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 3px;gap:1px;position:relative;scroll-snap-align:center}.cycle-strip button.active{background:#fbf6ea;box-shadow:inset 0 0 0 1px #e4d3b1}.cycle-strip button.active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--gold)}.cycle-strip small,.cycle-strip span{font-size:8px;color:#999;line-height:11px}.cycle-strip b{font-size:15px;line-height:17px}.cycle-strip .ss{max-width:54px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.current-tag{display:inline-block;margin-left:3px;padding:0 4px;border-radius:7px;background:#efe3c9;color:#8d6c2f;font-size:7px;font-style:normal;vertical-align:1px}.current-luck:before{content:"当";position:absolute;right:3px;top:3px;border-radius:6px;background:#f1eadb;color:#92753f;padding:0 3px;font-size:7px;line-height:13px}.professional-note{display:flex;justify-content:space-between;gap:12px;padding:10px 14px 4px;color:#999;font-size:9px;line-height:15px}.professional-note b{font-weight:500;color:#8b713d}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}.modal.show{display:flex}.sheet{width:min(100%,460px);max-height:72dvh;background:#fff;border-radius:14px 14px 0 0;padding:12px 14px 18px;overflow:auto}.sheet header{height:38px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;margin-bottom:10px}.sheet header b{font-size:14px}.sheet header button{border:0;background:transparent;color:#888}.picker-list{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.picker-list button{min-height:43px;border:0;border-radius:6px;background:#f6f6f6;color:#444;font-size:11px}.picker-list button.active{background:#111;color:#d2b06b}.empty{padding:80px 24px;text-align:center;color:#999}.empty button{margin-top:18px;border:0;border-radius:20px;background:#111;color:#d2b06b;padding:10px 20px}
+.toast{position:fixed;left:50%;bottom:30px;z-index:100;transform:translate(-50%,20px);background:rgba(20,20,20,.9);color:#fff;border-radius:18px;padding:8px 14px;font-size:11px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-width:700px){body{padding:22px 0}.app{border-radius:16px;box-shadow:0 10px 35px rgba(0,0,0,.06)}.modal{align-items:center}.sheet{border-radius:14px}}
+@media(min-width:900px){
+  body{padding:28px 24px;background:#f2f2f2}.app{width:min(100%,1180px);min-height:calc(100dvh - 56px);border-radius:18px;overflow:visible}.topbar{border-radius:18px 18px 0 0;height:54px}.tabbar{top:54px;height:46px}.page{background:#f5f5f5;padding:18px}.info-layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:18px;align-items:start}.info-primary,.info-secondary{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #ececec}.info-secondary{padding:0 0 16px}.profile-card{padding:22px 20px}.info-list{padding:4px 18px 8px}.info-item{min-height:49px}.section-title{padding:20px 20px 10px}.mini-bazi{margin:0 20px}.mini-col{padding:14px 6px}.mini-col b{font-size:26px;line-height:30px}.score-wrap{padding:0 20px}.score-row{height:34px;grid-template-columns:40px 1fr 50px}.aux-grid{margin:0 20px;grid-template-columns:repeat(4,1fr)}.aux{min-height:62px;border-right:1px solid #eee!important;border-bottom:1px solid #eee!important}.aux:nth-child(4n){border-right:0!important}.aux:nth-last-child(-n+4){border-bottom:0!important}
+  .view#basicView,.view#professionalView{background:#fff;border:1px solid #e9e9e9;border-radius:12px;overflow:hidden}.chart-summary{display:grid;grid-template-columns:1.4fr 1fr 1fr;min-height:62px;border-bottom:1px solid #eee;background:#fff}.summary-cell{padding:11px 18px;border-right:1px solid #eee;display:flex;flex-direction:column;justify-content:center}.summary-cell:last-child{border-right:0}.summary-cell small{font-size:9px;color:#aaa;margin-bottom:4px}.summary-cell b{font-size:12px;color:#3b3b3b;font-weight:550}.summary-pillars{letter-spacing:3px;font-size:16px!important;color:#806632!important}.chart-head{padding:14px 20px 11px}.row{grid-template-columns:56px repeat(4,minmax(100px,1fr));min-height:40px}.row>span{font-size:12px;padding:8px 6px;line-height:17px}.row>span:first-child{font-size:10px}.row.stems span:not(:first-child),.row.branches span:not(:first-child){font-size:27px;line-height:31px}.hidden i b{font-size:11px}.hidden i small{font-size:9px}.shensha-cell{gap:4px;padding:9px 6px!important}.sha-chip{font-size:9px;min-height:20px;padding:3px 6px;border-radius:9px}.chart-note{padding:12px 20px 14px}
+  .flow-hero{padding:15px 20px 13px;display:grid;grid-template-columns:minmax(260px,1fr) auto;align-items:center;gap:22px}.flow-hero-top{align-items:center;min-width:0}.flow-hero strong{font-size:16px}.flow-hero strong b{font-size:23px}.flow-actions{grid-template-columns:38px 150px 88px 150px 38px;justify-content:end;margin-top:0}.flow-actions button{height:32px}.professional .row{min-width:0;grid-template-columns:56px repeat(6,minmax(105px,1fr))}.cycle-panel{margin-top:16px}.cycle-head{height:40px;padding:0 18px}.cycle-head b{font-size:12px}.cycle-strip{display:grid;overflow:visible}.cycle-block:first-child .cycle-strip{grid-template-columns:repeat(12,minmax(0,1fr))}.cycle-block:last-child .cycle-strip{grid-template-columns:repeat(10,minmax(0,1fr))}.cycle-strip button{width:auto;min-width:0;min-height:108px;border-bottom:0}.cycle-strip button:last-child{border-right:0}.cycle-strip b{font-size:17px;line-height:20px}.cycle-strip small,.cycle-strip span{font-size:9px;line-height:12px}.professional-note{padding:12px 18px 15px}.picker-list{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <button id="back" class="back" type="button" aria-label="返回"></button>
+    <b>八字命盘</b>
+    <div class="top-actions"><button id="saveResult" class="save-result" type="button">保存</button><button id="redo" class="redo" type="button">重排</button></div>
+  </header>
+  <nav class="tabbar">
+    <button id="infoTab" class="active" type="button">基本信息</button>
+    <button id="basicTab" type="button">基本命盘</button>
+    <button id="professionalTab" type="button">专业细盘</button>
+  </nav>
+  <main id="page" class="page" hidden>
+    <section id="infoView" class="view active">
+      <div class="info-layout">
+        <div class="info-primary">
+          <div class="profile-card"><div class="seal">命</div><div><h1 id="resultName">命盘</h1><p id="profileLunar"></p><p id="profileSolar"></p><p class="gold" id="profileRule"></p></div></div>
+          <div class="info-list">
+            <div class="info-item"><span>性别 / 生肖</span><b id="genderAnimal"></b></div>
+            <div class="info-item"><span>出生时间</span><b id="inputTime"></b></div>
+            <div class="info-item"><span>真太阳时</span><b id="solarCorrected"></b></div>
+            <div class="info-item"><span>出生地点</span><b id="birthPlace"></b></div>
+            <div class="info-item"><span>节气</span><b id="jieqiDesc"></b></div>
+          </div>
+        </div>
+        <div class="info-secondary desktop-panel">
+          <div class="section-title">四柱概览</div><div id="miniBazi" class="mini-bazi"></div>
+          <div class="section-title">五行能量</div><div id="scoreGrid" class="score-wrap"></div>
+          <div class="section-title">命盘辅助信息</div><div id="auxGrid" class="aux-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="basicView" class="view">
+      <div id="basicSummary" class="chart-summary"></div>
+      <div class="chart-head"><span>四柱 · 十神 · 藏干 · 神煞</span><b id="dayMasterText"></b></div>
+      <div id="baziTable" class="table-card"></div>
+      <div class="chart-note" id="basicNote"></div>
+    </section>
+
+    <section id="professionalView" class="view">
+      <div class="flow-hero">
+        <div class="flow-hero-top">
+          <div><small id="flowYearMeta">当前流年</small><strong><b id="flowGanzhi">—</b><span id="flowYear">—</span></strong></div>
+          <div class="flow-hero-meta"><small id="flowAge">—</small><b id="flowLuck">—</b></div>
+        </div>
+        <div class="flow-actions">
+          <button id="prevFlow" class="arrow-btn" type="button" aria-label="上一流年">‹</button>
+          <button id="pickYear" class="flow-select" type="button"><span>流年</span><b id="pickYearText">—</b></button>
+          <button id="currentYear" class="today" type="button">回到今年</button>
+          <button id="pickLuck" class="flow-select" type="button"><span>大运</span><b id="pickLuckText">—</b></button>
+          <button id="nextFlow" class="arrow-btn" type="button" aria-label="下一流年">›</button>
+        </div>
+      </div>
+      <div id="professionalTable" class="table-card professional"></div>
+      <section class="cycle-panel">
+        <div class="cycle-block"><div class="cycle-head"><b>大运</b><span>点击切换十年运程</span></div><div id="dayun" class="cycle-strip"></div></div>
+        <div class="cycle-block"><div class="cycle-head"><b>流年</b><span>当前大运内 10 个流年</span></div><div id="liunian" class="cycle-strip"></div></div>
+      </section>
+      <div class="professional-note"><span id="qiyunInfo"></span><span><span id="jiaoyunInfo"></span> · <b id="flowHint">点击大运/流年切换</b></span></div>
+    </section>
+  </main>
+  <section id="empty" class="empty" hidden>没有找到本次排盘数据。<br><button onclick="location.href='./index.html'">返回重新排盘</button></section>
+</div>
+<div id="flowPicker" class="modal"><section class="sheet"><header><b id="pickerTitle"></b><button id="closePicker" type="button">取消</button></header><div id="pickerList" class="picker-list"></div></section></div>
+<div id="toast" class="toast"></div>
+<script>
+const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let bundle=null,chartData=null,selectedDaYun=0,selectedLiuNian=0,pickerType='';
+const stems={甲:'wood',乙:'wood',丙:'fire',丁:'fire',戊:'earth',己:'earth',庚:'metal',辛:'metal',壬:'water',癸:'water'};
+const branches={寅:'wood',卯:'wood',巳:'fire',午:'fire',辰:'earth',戌:'earth',丑:'earth',未:'earth',申:'metal',酉:'metal',亥:'water',子:'water'};
+const wxKeys=['木','火','土','金','水'],wxClass={木:'wood',火:'fire',土:'earth',金:'metal',水:'water'};
+const pillarKeys=['year_pillar','month_pillar','day_pillar','hour_pillar'],keys=['year','month','day','hour'],labels=['年柱','月柱','日柱','时柱'];
+const elementOf=v=>stems[v]||branches[v]||'';
+function lunarText(date){try{const d=new Date(date+'T12:00:00');return new Intl.DateTimeFormat('zh-CN-u-ca-chinese',{year:'numeric',month:'long',day:'numeric'}).format(d).replace(/\s+/g,'')}catch{return '—'}}
+function hiddenMarkup(v){return (v||[]).length?(v||[]).map(i=>`<i><b class="${elementOf(i.stem)}">${esc(i.stem)}</b><small>${esc(i.shi_shen||'')}</small></i>`).join(''):'—'}
+function shaMarkup(v){const arr=Array.isArray(v)?v:String(v||'').split('、').filter(Boolean);return arr.length?arr.map(x=>`<i class="sha-chip">${esc(x)}</i>`).join(''):'<i class="sha-empty">—</i>'}
+function row(label,values,className='',opt={}){return `<div class="row ${className}"><span>${label}</span>${values.map((v,i)=>{const cls=[];if(opt.flowColumns?.includes(i))cls.push('flow-col');if(opt.dayColumn===i)cls.push('day-col');if(className==='hidden-row'&&Array.isArray(v))return `<span class="hidden ${cls.join(' ')}">${hiddenMarkup(v)}</span>`;if(className==='shensha-row')return `<span class="shensha-cell ${cls.join(' ')}">${shaMarkup(v)}</span>`;if(className==='stems'||className==='branches')cls.push(className==='stems'?'stem':'branch',elementOf(v));return `<span class="${cls.join(' ')}">${esc(v)}</span>`}).join('')}</div>`}
+function baseRows(d){const b=d.bazi||{},s=d.shi_shen||{},h=d.hidden_stems||{};return [
+  row('日期',labels,'head',{dayColumn:2}),
+  row('主星',[s.year_stem,s.month_stem,s.day_stem||'日元',s.hour_stem],'',{dayColumn:2}),
+  row('天干',pillarKeys.map(k=>b[k]?.heavenly_stem||''),'stems',{dayColumn:2}),
+  row('地支',pillarKeys.map(k=>b[k]?.earthly_branch||''),'branches',{dayColumn:2}),
+  row('藏干',keys.map(k=>h[k]||[]),'hidden-row',{dayColumn:2}),
+  row('副星',[s.year_branch,s.month_branch,s.day_branch,s.hour_branch],'',{dayColumn:2}),
+  row('星运',keys.map(k=>d.xing_yun?.[k]||''),'',{dayColumn:2}),
+  row('自坐',keys.map(k=>d.zi_zuo?.[k]||''),'',{dayColumn:2}),
+  row('空亡',keys.map(k=>d.kong_wang?.[k]||''),'',{dayColumn:2}),
+  row('纳音',keys.map(k=>d.nayin?.[k]||''),'',{dayColumn:2}),
+  row('神煞',keys.map(k=>d.shen_sha?.[k]||[]),'shensha-row',{dayColumn:2})
+].join('')}
+function activate(mode){for(const m of ['info','basic','professional']){$(m+'Tab').classList.toggle('active',m===mode);$(m+'View').classList.toggle('active',m===mode)}if(mode==='professional')setTimeout(scrollActive,0)}
+function switchTab(mode){activate(mode);history.replaceState(null,'','#'+mode)}
+function years(){return chartData.da_yun?.[selectedDaYun]?.liu_nian||[]}
+function showPicker(type){pickerType=type;const list=type==='dayun'?chartData.da_yun||[]:years(),active=type==='dayun'?selectedDaYun:selectedLiuNian;$('pickerTitle').textContent=type==='dayun'?'选择大运':'选择流年';$('pickerList').innerHTML=list.map((it,i)=>`<button data-index="${i}" class="${active===i?'active':''}">${type==='dayun'?`${esc(it.start_age)}岁 ${esc(it.pillar)}`:`${esc(it.year)} ${esc(it.ganzhi)}`}</button>`).join('');$('pickerList').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(type==='dayun')selectDaYun(+b.dataset.index);else selectedLiuNian=+b.dataset.index;hidePicker();renderPro()});$('flowPicker').classList.add('show')}
+function hidePicker(){$('flowPicker').classList.remove('show')}
+function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1400)}
+function renderInfo(d,p,disp){
+  $('resultName').textContent=p.name||'未命名命主';$('profileSolar').textContent=`阳历：${p.birthday||'—'} ${p.birth_time||''}`;$('profileLunar').textContent=`农历：${p.is_lunar?disp.birth||'—':lunarText(p.birthday||'')}`;$('profileRule').textContent=`${p.is_lunar?'农历录入':'公历录入'} · ${d.day_master?.description||''}`;
+  $('genderAnimal').textContent=`${p.gender==='female'?'女命':'男命'} / ${d.animal||'—'}`;$('inputTime').textContent=disp.birth||`${p.birthday||''} ${p.birth_time||''}`;$('solarCorrected').textContent=d.solar_time||'—';$('birthPlace').textContent=disp.region||p.birth_region||`东经${p.longitude||''}`;$('jieqiDesc').textContent=d.jieqi_desc||'—';
+  const b=d.bazi||{},s=d.shi_shen||{};$('miniBazi').innerHTML=pillarKeys.map((k,i)=>`<div class="mini-col ${i===2?'day':''}"><small>${labels[i]}</small><b class="${elementOf(b[k]?.heavenly_stem)}">${esc(b[k]?.heavenly_stem||'—')}</b><b class="${elementOf(b[k]?.earthly_branch)}">${esc(b[k]?.earthly_branch||'—')}</b><em>${esc([s.year_stem,s.month_stem,s.day_stem||'日元',s.hour_stem][i]||'')}</em></div>`).join('');
+  const scores=d.wu_xing_score||{},max=Math.max(...wxKeys.map(k=>Number(scores[k]||0)),1);$('scoreGrid').innerHTML=wxKeys.map(k=>`<div class="score-row ${wxClass[k]}"><span>${k}</span><div class="bar"><i style="width:${Math.max(2,Number(scores[k]||0)/max*100)}%"></i></div><b>${Number(scores[k]||0).toFixed(1)}</b></div>`).join('');
+  const aux=[['胎元',d.taiyuan],['命宫',d.minggong],['身宫',d.shenggong],['胎息',d.taixi],['起运',d.qiyun?`${d.qiyun.year}年${d.qiyun.month}月${d.qiyun.day}日`:'—'],['交运',d.jiaoyun?.desc||'—'],['五行',d.five_elements?.summary],['强弱',d.day_master_strength?.strong?'偏强':'偏弱']];$('auxGrid').innerHTML=aux.map(([k,v])=>`<div class="aux"><small>${k}</small><b>${esc(v||'—')}</b></div>`).join('')
+}
+function pillarText(d){const b=d.bazi||{};return pillarKeys.map(k=>`${b[k]?.heavenly_stem||''}${b[k]?.earthly_branch||''}`).join('　')}
+function renderBasicSummary(d,p,disp){$('basicSummary').innerHTML=`<div class="summary-cell"><small>命主 / 四柱</small><b>${esc(p.name||'未命名')} · ${esc(p.gender==='female'?'女命':'男命')}</b></div><div class="summary-cell"><small>四柱</small><b class="summary-pillars">${esc(pillarText(d))}</b></div><div class="summary-cell"><small>真太阳时</small><b>${esc(d.solar_time||disp.birth||'—')}</b></div>`}
+function selectDaYun(i,preferCurrent=true){selectedDaYun=Math.max(0,Math.min((chartData.da_yun||[]).length-1,i));const ys=years(),cy=new Date().getFullYear();let yi=preferCurrent?ys.findIndex(x=>Number(x.year)===cy):-1;selectedLiuNian=yi>=0?yi:0}
+function selectCurrentYear(){const cy=new Date().getFullYear();const di=(chartData.da_yun||[]).findIndex(x=>(x.liu_nian||[]).some(y=>Number(y.year)===cy));if(di<0){toast('当前年份不在已生成的大运范围内');return}selectedDaYun=di;selectedLiuNian=(chartData.da_yun[di].liu_nian||[]).findIndex(y=>Number(y.year)===cy);renderPro()}
+function moveFlow(delta){const dys=chartData.da_yun||[];let yi=selectedLiuNian+delta,di=selectedDaYun;if(yi<0&&di>0){di--;yi=(dys[di].liu_nian||[]).length-1}else if(yi>=(dys[di]?.liu_nian||[]).length&&di<dys.length-1){di++;yi=0}else yi=Math.max(0,Math.min((dys[di]?.liu_nian||[]).length-1,yi));selectedDaYun=di;selectedLiuNian=yi;renderPro()}
+function scrollActive(){document.querySelector('#dayun button.active')?.scrollIntoView({inline:'center',block:'nearest'});document.querySelector('#liunian button.active')?.scrollIntoView({inline:'center',block:'nearest'})}
+function renderPro(){
+  const dy=chartData.da_yun?.[selectedDaYun]||{},ys=years(),ln=ys[selectedLiuNian]||{},b=chartData.bazi||{},s=chartData.shi_shen||{},h=chartData.hidden_stems||{},cy=new Date().getFullYear();
+  const currentLuck=(dy.liu_nian||[]).some(y=>Number(y.year)===cy);
+  $('dayun').innerHTML=(chartData.da_yun||[]).map((it,i)=>`<button class="${i===selectedDaYun?'active':''} ${(it.liu_nian||[]).some(y=>Number(y.year)===cy)?'current-luck':''}" data-index="${i}"><small>${esc(it.start_age)}—${esc(it.end_age)}岁</small><small>${esc(it.start_year)}</small><b class="${elementOf(it.heavenly_stem)}">${esc(it.heavenly_stem||'')}</b><b class="${elementOf(it.earthly_branch)}">${esc(it.earthly_branch||'')}</b><span class="ss">${esc(it.stem_shi_shen||'')}</span></button>`).join('');
+  $('liunian').innerHTML=ys.map((it,i)=>`<button class="${i===selectedLiuNian?'active':''}" data-index="${i}"><small>${esc(it.age||'')}</small><small>${esc(it.year)}${Number(it.year)===cy?'<i class="current-tag">今</i>':''}</small><b class="${elementOf(it.heavenly_stem)}">${esc(it.heavenly_stem||'')}</b><b class="${elementOf(it.earthly_branch)}">${esc(it.earthly_branch||'')}</b><span class="ss">${esc(it.stem_shi_shen||'')}</span></button>`).join('');
+  $('dayun').querySelectorAll('button').forEach(x=>x.onclick=()=>{selectDaYun(+x.dataset.index);renderPro()});$('liunian').querySelectorAll('button').forEach(x=>x.onclick=()=>{selectedLiuNian=+x.dataset.index;renderPro()});
+  $('professionalTable').innerHTML=[
+    `<div class="row head"><span>日期</span><span><button class="picker-trigger" data-picker="liunian">流年↕</button></span><span><button class="picker-trigger" data-picker="dayun">大运↕</button></span>${labels.map((x,i)=>`<span class="${i===2?'day-col':''}">${x}${i===2?'<small class="origin-head">日主</small>':''}</span>`).join('')}</div>`,
+    row('主星',[ln.stem_shi_shen||'—',dy.stem_shi_shen||'—',s.year_stem,s.month_stem,s.day_stem||'日元',s.hour_stem],'',{flowColumns:[0,1],dayColumn:4}),
+    row('天干',[ln.heavenly_stem||'',dy.heavenly_stem||'',...pillarKeys.map(k=>b[k]?.heavenly_stem||'')],'stems',{flowColumns:[0,1],dayColumn:4}),
+    row('地支',[ln.earthly_branch||'',dy.earthly_branch||'',...pillarKeys.map(k=>b[k]?.earthly_branch||'')],'branches',{flowColumns:[0,1],dayColumn:4}),
+    row('藏干',[ln.hidden_stems||[],dy.hidden_stems||[],...keys.map(k=>h[k]||[])],'hidden-row',{flowColumns:[0,1],dayColumn:4}),
+    row('副星',[ln.branch_shi_shen||'—',dy.branch_shi_shen||'—',s.year_branch,s.month_branch,s.day_branch,s.hour_branch],'',{flowColumns:[0,1],dayColumn:4}),
+    row('纳音',[ln.nayin||'—',dy.nayin||'—',...keys.map(k=>chartData.nayin?.[k]||'—')],'',{flowColumns:[0,1],dayColumn:4}),
+    row('神煞',[ln.shen_sha||[],dy.shen_sha||[],...keys.map(k=>chartData.shen_sha?.[k]||[])],'shensha-row',{flowColumns:[0,1],dayColumn:4})
+  ].join('');
+  $('professionalTable').querySelectorAll('[data-picker]').forEach(btn=>btn.onclick=()=>showPicker(btn.dataset.picker));
+  $('flowGanzhi').textContent=ln.ganzhi||'—';$('flowYear').textContent=ln.year?`${ln.year}年`:'—';$('flowAge').textContent=`${ln.age||'—'} · ${dy.start_age??'—'}—${dy.end_age??'—'}岁`;$('flowLuck').textContent=`${dy.pillar||'—'}大运${currentLuck?' · 当运':''}`;$('pickYearText').textContent=ln.year||'—';$('pickLuckText').textContent=dy.pillar||'—';$('flowYearMeta').textContent=Number(ln.year)===cy?'当前流年 · 今年':'所选流年';
+  $('qiyunInfo').textContent=chartData.qiyun?`起运：出生后 ${chartData.qiyun.year}年${chartData.qiyun.month}月${chartData.qiyun.day}日`:'起运：—';$('jiaoyunInfo').textContent=chartData.jiaoyun?`交运：${chartData.jiaoyun.desc||'—'}`:'交运：—';$('flowHint').textContent=`${dy.pillar||'—'} · ${ln.ganzhi||'—'}`;setTimeout(scrollActive,0)
+}
+const SAVED_LIST_KEY='baziSavedProfilesV2';
+function savedProfiles(){try{const x=JSON.parse(localStorage.getItem(SAVED_LIST_KEY)||'[]');return Array.isArray(x)?x:[]}catch{return[]}}
+function profileKey(s){return [s.name||'',s.gender||'',s.birthday||'',s.birth_time||'',s.areaCode||s.area_code||s.birth_region||'',s.group||'全部'].join('|')}
+function saveCurrentResult(){if(!bundle)return;const s=bundle.storage||{...(bundle.profile||{}),calendar:bundle.display?.calendar||((bundle.profile||{}).is_lunar?'lunar':'solar'),isLeap:!!(bundle.profile||{}).is_leap,areaCode:(bundle.profile||{}).area_code||'',displayBirth:bundle.display?.birth||'',displayRegion:bundle.display?.region||'',savedAt:Date.now()};let list=savedProfiles(),key=profileKey(s);list=list.filter(x=>profileKey(x)!==key);list.unshift({...s,savedAt:Date.now()});localStorage.setItem(SAVED_LIST_KEY,JSON.stringify(list.slice(0,80)));localStorage.setItem('baziSavedProfile',JSON.stringify(s));bundle.saved=true;sessionStorage.setItem('baziChartResult',JSON.stringify(bundle));updateSaveButton();toast('命盘资料已保存')}
+function updateSaveButton(){const b=$('saveResult');if(!b)return;b.textContent=bundle?.saved?'已保存':'保存';b.classList.toggle('saved',!!bundle?.saved)}
+function render(){const d=bundle.data,p=bundle.profile||{},disp=bundle.display||{};chartData=d;renderInfo(d,p,disp);renderBasicSummary(d,p,disp);$('baziTable').innerHTML=baseRows(d);$('dayMasterText').textContent=`${d.day_master?.description||''} · ${d.five_elements?.summary||''}`;$('basicNote').textContent=`${d.jieqi_desc||''}${d.solar_time?' · 本盘按真太阳时 '+d.solar_time+' 计算。':''}`;const cy=new Date().getFullYear(),di=(d.da_yun||[]).findIndex(x=>(x.liu_nian||[]).some(y=>Number(y.year)===cy));selectedDaYun=di>=0?di:0;const yi=(d.da_yun?.[selectedDaYun]?.liu_nian||[]).findIndex(x=>Number(x.year)===cy);selectedLiuNian=yi>=0?yi:0;renderPro();const initial=['info','basic','professional'].includes(location.hash.slice(1))?location.hash.slice(1):'info';activate(initial);updateSaveButton();$('page').hidden=false}
+$('saveResult').onclick=saveCurrentResult;$('infoTab').onclick=()=>switchTab('info');$('basicTab').onclick=()=>switchTab('basic');$('professionalTab').onclick=()=>switchTab('professional');$('closePicker').onclick=hidePicker;$('flowPicker').onclick=e=>{if(e.target===$('flowPicker'))hidePicker()};$('back').onclick=()=>history.length>1?history.back():location.href='./index.html';$('redo').onclick=()=>location.href='./index.html';$('pickYear').onclick=()=>showPicker('liunian');$('pickLuck').onclick=()=>showPicker('dayun');$('prevFlow').onclick=()=>moveFlow(-1);$('nextFlow').onclick=()=>moveFlow(1);$('currentYear').onclick=selectCurrentYear;
+document.addEventListener('keydown',e=>{if(!$('professionalView').classList.contains('active')||$('flowPicker').classList.contains('show'))return;if(e.key==='ArrowLeft')moveFlow(-1);if(e.key==='ArrowRight')moveFlow(1)});
+try{bundle=JSON.parse(sessionStorage.getItem('baziChartResult')||'null')}catch{}if(bundle?.data)render();else $('empty').hidden=false;
+</script>
+</body>
+</html>

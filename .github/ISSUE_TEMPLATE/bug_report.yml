@@ -1,0 +1,44 @@
+name: 排盘 Bug
+description: 报告历法、真太阳时、四柱、大运、神煞或界面问题
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 请说明你看到的问题。
+    validations:
+      required: true
+  - type: textarea
+    id: birth
+    attributes:
+      label: 排盘输入
+      description: 请填写公历/农历、出生年月日时分、性别、出生地区/经度、是否闰月。
+      placeholder: |
+        历法：公历
+        日期：1990-06-15
+        时间：12:00
+        性别：男
+        地区：浙江省杭州市
+        经度：120.15
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: 当前结果
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果 / 理论依据
+      description: 如果属于命理口径差异，请尽量给出可复核依据。
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: 环境
+      placeholder: Node 20 / Chrome / Windows 11 等
