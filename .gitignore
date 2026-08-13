@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# coverage / temp
+coverage/
+.tmp/
+tmp/
+*.tmp
+
+# archives
+*.zip
+*.7z
+*.tar
+*.tar.gz

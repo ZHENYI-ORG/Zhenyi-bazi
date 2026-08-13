@@ -1,0 +1,29 @@
+{
+  "name": "zhenyi-bazi-paipan",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "node tests/regression.js",
+    "check": "npm run build && npm test",
+    "test:source": "npm run check"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "description": "真一开源八字排盘系统：TypeScript、真太阳时、公农历、大运流年、神煞、全国省市区县与响应式 UI",
+  "license": "MIT",
+  "keywords": [
+    "bazi",
+    "four-pillars",
+    "chinese-astrology",
+    "true-solar-time",
+    "lunar-calendar",
+    "shensha",
+    "typescript"
+  ]
+}

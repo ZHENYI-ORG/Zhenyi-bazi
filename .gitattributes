@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Generated artifacts / large static datasets
+dist/** linguist-generated=true
+public/assets/china-regions.js linguist-generated=true
