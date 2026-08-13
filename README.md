@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/zhenyi-banner.png" alt="真一八字排盘 · ZhenYi Bazi Paipan" width="100%" />
+</p>
+
 # 真一八字排盘 · ZhenYi Bazi Paipan
 
 > **传统师承 · 十余年线下命理实务 · TypeScript 开源八字排盘系统**
