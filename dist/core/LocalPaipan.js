@@ -1,9 +1,15 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocalPaipan = void 0;
+const nayin_json_1 = __importDefault(require("../data/nayin.json"));
 class LocalPaipan {
-    // Legacy behavior: false means 23:00-24:00 does NOT move the day pillar back one day.
-    zwz = false;
+    // 真一盲派：以 0 点为换日界。底层日干支公式会在 23:00 后推进到次日，
+    // 因此 zwz=true 时会把 23:00-24:00 的日柱退回本日，同时保留夜子时独立时干。
+    // 保留 zwz 字段用于兼容旧调用；新代码应理解为 splitZiHourAtMidnight。
+    zwz = true;
     ctg = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
     cwx = ['木', '火', '土', '金', '水'];
     cdz = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
@@ -23,6 +29,17 @@ class LocalPaipan {
     ptsb = [324.96, 337.23, 342.08, 27.85, 73.14, 171.52, 222.54, 296.72, 243.58, 119.81, 297.17, 21.02, 247.54, 325.15, 60.93, 155.12, 288.79, 198.04, 199.76, 95.39, 287.11, 320.81, 227.73, 15.45];
     ptsc = [1934.136, 32964.467, 20.186, 445267.112, 45036.886, 22518.443, 65928.934, 3034.906, 9037.513, 33718.147, 150.678, 2281.226, 29929.562, 31555.956, 4443.417, 67555.328, 4562.452, 62894.029, 31436.921, 14577.848, 31931.756, 34777.259, 1222.114, 16859.074];
     static QIYUN_WENZHEN_BIAS_MINUTES = 48;
+    static JIEQI_SEQUENCE = ['立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', '冬至', '小寒', '大寒'];
+    static HOUR_WINDOWS = { 子: [23, 1], 丑: [1, 3], 寅: [3, 5], 卯: [5, 7], 辰: [7, 9], 巳: [9, 11], 午: [11, 13], 未: [13, 15], 申: [15, 17], 酉: [17, 19], 戌: [19, 21], 亥: [21, 23] };
+    static BLIND_JIAOYUN_RULES = {
+        // 资料写法采用“虚数/包含节气当天”的传统计数：前三天=>公历日期减2天；后九天=>加8天。
+        // 不把口诀里的“三/九”直接当作 Date 的 +/-3、+/-9。
+        0: { element: '木', term: '大寒', traditionalCountDays: 0, calendarOffsetDays: 0, hourBranch: '寅' },
+        1: { element: '火', term: '清明', traditionalCountDays: -3, calendarOffsetDays: -2, hourBranch: '午' },
+        2: { element: '土', term: '芒种', traditionalCountDays: 9, calendarOffsetDays: 8, hourBranch: '辰' },
+        3: { element: '金', term: '处暑', traditionalCountDays: 0, calendarOffsetDays: 0, hourBranch: '申' },
+        4: { element: '水', term: '冬至', traditionalCountDays: -3, calendarOffsetDays: -2, hourBranch: '亥' }
+    };
     mod(n, m) { return ((n % m) + m) % m; }
     VE(yy) {
         if (yy < -8000 || yy > 8001)
@@ -212,6 +229,11 @@ class LocalPaipan {
         const jdzq = this.GetZQsinceWinterSolstice(yy), jdnm = this.GetSMsinceWinterSolstice(yy, jdzq[0]);
         let yz = 0;
         if (Math.floor(jdzq[12] + 0.5) >= Math.floor(jdnm[13] + 0.5)) {
+            // The legacy PHP left mc[0] undefined in leap-month years. PHP's weak
+            // numeric coercion happened to treat it as 0, while TypeScript produced
+            // undefined/NaN for a few early-January dates. Month code 0 is the
+            // winter month containing the solstice, so define it explicitly.
+            mc[0] = 0;
             for (let i = 1; i <= 14; i++) {
                 if (Math.floor((jdnm[i] + 0.5) > Math.floor(jdzq[i - 1 - yz] + 0.5) && Math.floor(jdnm[i + 1] + 0.5) <= Math.floor(jdzq[i - yz] + 0.5) ? 1 : 0)) {
                     mc[i] = i - 0.5;
@@ -461,14 +483,82 @@ class LocalPaipan {
         if (b[i][tg] === dz)
             return { index: i, char: this.selfQi[i] }; return { index: -1, char: '--' }; }
     computeQiyunFromJdRange(start, end) { let total = Math.max(0, (end - start) * 1440 - LocalPaipan.QIYUN_WENZHEN_BIAS_MINUTES); const year = Math.floor(total / 4320); total -= year * 4320; const month = Math.floor(total / 360); total -= month * 360; const day = Math.floor(total / 12); total -= day * 12; const hour = Math.floor(total * 2); return { year, month, day, hour }; }
+    static calendarDayDistance(a, b) {
+        const x = Date.UTC(a[0], a[1] - 1, a[2]), y = Date.UTC(b[0], b[1] - 1, b[2]);
+        return Math.max(0, Math.round(Math.abs(y - x) / 86400000));
+    }
+    computeBlindQiyun(birth, jieJd) {
+        const jie = this.Julian2Solar(jieJd), sourceDays = LocalPaipan.calendarDayDistance(birth, jie);
+        const q = Math.floor(sourceDays / 3), r = sourceDays % 3;
+        let age = q + (r >= 2 ? 1 : 0);
+        age = Math.max(1, Math.min(10, age));
+        return { source_days: sourceDays, virtual_age: age };
+    }
+    getBlindJiaoyunRule(nayinElement) {
+        const rule = LocalPaipan.BLIND_JIAOYUN_RULES[nayinElement];
+        if (!rule)
+            return { element: '', term: '', traditional_count_days: 0, calendar_offset_days: 0, offset_days: 0, hour_branch: '', counting_mode: 'traditional_inclusive', desc: '盲派纳音交运规则未识别' };
+        const n = rule.traditionalCountDays;
+        const offset = n === 0 ? '当日' : n < 0 ? `前${Math.abs(n)}日` : `后${n}日`;
+        return {
+            element: rule.element, term: rule.term,
+            // offset_days 保留为口诀中的“虚数天数”，兼容旧输出；真正日期计算使用 calendar_offset_days。
+            offset_days: n, traditional_count_days: n, calendar_offset_days: rule.calendarOffsetDays,
+            counting_mode: 'traditional_inclusive', includes_solar_term_day: true, hour_branch: rule.hourBranch,
+            interval_years: 5, desc: `${rule.element}命：${rule.term}${offset}${rule.hourBranch}时交运；五年一交，十年两交（虚数，含节气当日）`
+        };
+    }
     static partsToDate(parts) { return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], parts[3] || 0, parts[4] || 0, parts[5] || 0)); }
     static dateParts(d) { return [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()]; }
     static addCalendar(parts, y, m, d, h) { const dt = LocalPaipan.partsToDate(parts); dt.setUTCFullYear(dt.getUTCFullYear() + y); dt.setUTCMonth(dt.getUTCMonth() + m); dt.setUTCDate(dt.getUTCDate() + d); dt.setUTCHours(dt.getUTCHours() + h); return LocalPaipan.dateParts(dt); }
-    buildJiaoyunDesc(gd, tg, jq, startParts) { const pn = tg[0] % 2, isForward = (gd === 0 && pn === 0) || (gd === 1 && pn === 1), stem = isForward ? '甲、己' : '癸、戊', jie = isForward ? '清明' : '惊蛰', year = startParts[0], jqy = this.GetPureJQsinceSpring(year), idx = isForward ? 3 : 2; let days = 0; if (jqy[idx]) {
-        const sj = this.Solar2Julian(...startParts);
-        if (sj !== false)
-            days = Math.max(0, Math.round(sj - jqy[idx]));
-    } return `逢${stem}年${jie}后${days}天交大运`; }
+    getSolarTermParts(calendarYear, term) {
+        for (const seedYear of [calendarYear - 1, calendarYear]) {
+            const rows = this.Get24JieQi(seedYear);
+            for (let i = 0; i < rows.length; i++) {
+                const parts = rows[i], name = LocalPaipan.JIEQI_SEQUENCE[i];
+                if (name === term && parts?.[0] === calendarYear)
+                    return parts;
+            }
+        }
+        return null;
+    }
+    buildBlindJiaoyunEvent(calendarYear, nayinElement) {
+        const rule = this.getBlindJiaoyunRule(nayinElement);
+        if (!rule || !rule.term)
+            return null;
+        const termParts = this.getSolarTermParts(calendarYear, rule.term);
+        if (!termParts)
+            return null;
+        const termDate = new Date(Date.UTC(termParts[0], termParts[1] - 1, termParts[2], 0, 0, 0));
+        termDate.setUTCDate(termDate.getUTCDate() + Number(rule.calendar_offset_days || 0));
+        const window = LocalPaipan.HOUR_WINDOWS[rule.hour_branch] || [0, 2];
+        const start = new Date(termDate.getTime()), end = new Date(termDate.getTime());
+        start.setUTCHours(window[0], 0, 0, 0);
+        if (window[0] === 23 && window[1] === 1) {
+            end.setUTCDate(end.getUTCDate() + 1);
+            end.setUTCHours(1, 0, 0, 0);
+        }
+        else
+            end.setUTCHours(window[1], 0, 0, 0);
+        const fmt = (d) => `${String(d.getUTCFullYear()).padStart(4, '0')}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')} ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`;
+        return {
+            year: calendarYear, element: rule.element, term: rule.term, term_time: this.formatSolarParts(termParts), offset_days: rule.offset_days, traditional_count_days: rule.traditional_count_days, calendar_offset_days: rule.calendar_offset_days, counting_mode: rule.counting_mode, includes_solar_term_day: true, hour_branch: rule.hour_branch,
+            date: `${String(start.getUTCFullYear()).padStart(4, '0')}-${String(start.getUTCMonth() + 1).padStart(2, '0')}-${String(start.getUTCDate()).padStart(2, '0')}`,
+            window_start: fmt(start), window_end: fmt(end), event_start_parts: LocalPaipan.dateParts(start), event_end_parts: LocalPaipan.dateParts(end),
+            precision: 'double_hour_window', time_basis: 'traditional_inclusive_day_count_plus_shichen', desc: `${calendarYear}年${rule.term}${rule.offset_days === 0 ? '当日' : rule.offset_days < 0 ? `前${Math.abs(rule.offset_days)}日` : `后${rule.offset_days}日`}${rule.hour_branch}时交运（含节气当日计数）`
+        };
+    }
+    buildBlindJiaoyunEvents(startYear, nayinElement, count = 25) {
+        const out = [];
+        for (let i = 0; i < count; i++) {
+            const e = this.buildBlindJiaoyunEvent(startYear + i * 5, nayinElement);
+            if (e)
+                out.push({ ...e, index: i + 1 });
+        }
+        return out;
+    }
+    formatSolarParts(parts) { return `${String(parts[0]).padStart(4, '0')}-${String(parts[1]).padStart(2, '0')}-${String(parts[2]).padStart(2, '0')} ${String(parts[3] || 0).padStart(2, '0')}:${String(parts[4] || 0).padStart(2, '0')}:${String(parts[5] || 0).padStart(2, '0')}`; }
+    buildJiaoyunDesc(nayinElement) { return this.getBlindJiaoyunRule(nayinElement).desc; }
     GetInfo(gd, yy, mm, dd, hh, mt = 0, ss = 0) {
         if (![0, 1].includes(gd))
             return {};
@@ -495,7 +585,8 @@ class LocalPaipan {
                 big_dz.push((dz[1] + 24 - i) % 12);
             }
         }
-        const q = this.computeQiyunFromJdRange(spanStart, spanEnd);
+        const precisionQ = this.computeQiyunFromJdRange(spanStart, spanEnd);
+        const blindQ = this.computeBlindQiyun([yy, mm, dd, hh, mt, ss], (gd === 0 && pn === 0) || (gd === 1 && pn === 1) ? spanEnd : spanStart);
         ret.tg = tg;
         ret.dz = dz;
         ret.bazi = [];
@@ -516,6 +607,13 @@ class LocalPaipan {
             self[i] = this.getSelfQi(tg[2], dz[i]);
             ny[i] = this.naYin(tg[i], dz[i]);
         }
+        const dayCs = [], yearCs = [], monthCs = [], hourCs = [];
+        for (let i = 0; i <= 3; i++) {
+            dayCs[i] = this.GetCs(tg[2], dz[i]);
+            yearCs[i] = this.GetCs(tg[0], dz[i]);
+            monthCs[i] = this.GetCs(tg[1], dz[i]);
+            hourCs[i] = this.GetCs(tg[3], dz[i]);
+        }
         gods[2] = { index: [5, 5], char: '元' };
         ret.na_yin = ny;
         ret.xw = xw;
@@ -528,13 +626,27 @@ class LocalPaipan {
         ret.tg_cg_god = gods;
         ret.dz_main_god = dzMain;
         ret.dz_cg_god = dzGod;
+        ret.day_cs = dayCs;
+        ret.year_cs = yearCs;
+        ret.month_cs = monthCs;
+        ret.hour_cs = hourCs;
         ret.self_qi = self;
         ret.big_tg = big_tg;
         ret.big_dz = big_dz;
-        ret.start_desc = `${q.year}年${q.month}月${q.day}天${q.hour}时起运`;
-        const birth = [yy, mm, dd, hh, mt, Math.max(0, ss)], start = LocalPaipan.addCalendar(birth, q.year, q.month, q.day, q.hour);
-        ret.start_time = start;
-        ret.jiaoyun_desc = this.buildJiaoyunDesc(gd, tg, jq, start);
+        ret.qiyun_method = 'blind_day_div_3';
+        ret.qiyun_source_days = blindQ.source_days;
+        ret.qiyun_virtual_age = blindQ.virtual_age;
+        ret.precision_qiyun_ref = precisionQ;
+        ret.start_desc = `${blindQ.virtual_age}虚岁起运（盲派三日一岁，${blindQ.source_days}天折算）`;
+        const startYear = yy + blindQ.virtual_age - 1;
+        const nayinElement = Number(ny?.[0]?.[1]);
+        ret.jiaoyun_rule = this.getBlindJiaoyunRule(nayinElement);
+        ret.jiaoyun_desc = this.buildJiaoyunDesc(nayinElement);
+        ret.jiaoyun_events = this.buildBlindJiaoyunEvents(startYear, nayinElement, 25);
+        const firstJiaoyun = ret.jiaoyun_events?.[0] ?? null;
+        ret.start_time = firstJiaoyun?.event_start_parts ?? [startYear, 1, 1, 0, 0, 0];
+        ret.start_time_window_end = firstJiaoyun?.event_end_parts ?? [];
+        ret.start_event = firstJiaoyun;
         ret.big = [];
         ret.big_start_time = [];
         ret.big_god = [];
@@ -546,16 +658,21 @@ class LocalPaipan {
             ret.big.push(this.ctg[big_tg[i]] + this.cdz[big_dz[i]]);
             ret.big_cs.push(this.GetCs(tg[2], big_dz[i]));
             ret.big_god.push(this.GetTenGod(tg[2], big_tg[i]));
-            const bp = LocalPaipan.addCalendar(start, i * 10, 0, 0, 0);
-            ret.big_start_time.push([bp[0], bp[1], bp[2], 0, 0, 0]);
+            const ev = ret.jiaoyun_events?.[i * 2];
+            ret.big_start_time.push(ev?.event_start_parts ?? [startYear + i * 10, 1, 1, 0, 0, 0]);
         }
         ret.wx_fen = this.wuXingPingFen(ret);
         return ret;
     }
-    naYin(tg, dz) { if (tg % 2 === 1) {
-        tg--;
-        dz--;
-    } const map = { 0: { 0: ['海中金', 3, 18], 2: ['大溪水', 4, 6], 4: ['佛灯火', 1, 1], 6: ['沙中金', 3, 9], 8: ['井泉水', 4, 2], 10: ['山头火', 1, 6] }, 2: { 0: ['涧下水', 4, 1], 2: ['炉中火', 1, 2], 4: ['沙中土', 2, 2], 6: ['天河水', 4, 9], 8: ['山下火', 1, 4], 10: ['房上土', 2, 6] }, 4: { 0: ['霹雳火', 1, 9], 2: ['城头土', 2, 9], 4: ['大林木', 0, 18], 6: ['天上火', 1, 18], 8: ['大驿土', 2, 18], 10: ['平地木', 0, 9] }, 6: { 0: ['壁上土', 2, 4], 2: ['松柏木', 0, 6], 4: ['白腊金', 3, 2], 6: ['路边土', 2, 1], 8: ['石榴木', 0, 1], 10: ['钗钏金', 3, 4] }, 8: { 0: ['桑松木', 0, 2], 2: ['金箔金', 3, 1], 4: ['长流水', 4, 4], 6: ['杨柳木', 0, 4], 8: ['剑锋金', 3, 6], 10: ['大海水', 4, 18] } }; return map[tg][dz]; }
+    naYin(tg, dz) {
+        if (tg % 2 === 1) {
+            tg--;
+            dz--;
+        }
+        const pillar = (this.ctg[tg] ?? '') + (this.cdz[dz] ?? '');
+        const row = nayin_json_1.default[pillar];
+        return row ? [row[0], row[1], row[2]] : [];
+    }
     wuXingPingFen(info, noNaYin = false) { const wx = [0, 0, 0, 0, 0]; for (const tg of info.tg) {
         const fen = tg % 2 === 1 ? 6 : 9;
         wx[this.GetTgWx(tg)] += fen;

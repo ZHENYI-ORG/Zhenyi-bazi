@@ -1,13 +1,16 @@
 {
   "name": "zhenyi-bazi-paipan",
-  "version": "1.0.0",
+  "version": "2.0.2",
   "private": true,
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc -p tsconfig.json",
-    "test": "node tests/regression.js",
+    "test": "node tests/regression.js && node tests/judgment-regression.js && node tests/judgment-source-benchmark.js",
     "check": "npm run build && npm test",
-    "test:source": "npm run check"
+    "test:source": "npm run check",
+    "test:judgment": "node tests/judgment-regression.js",
+    "test:judgment:stress": "node tests/judgment-stress.js",
+    "test:judgment:source": "node tests/judgment-source-benchmark.js"
   },
   "engines": {
     "node": ">=20"
@@ -15,7 +18,7 @@
   "devDependencies": {
     "typescript": "^5.8.3"
   },
-  "description": "真一开源八字排盘系统：TypeScript、真太阳时、公农历、大运流年、神煞、全国省市区县与响应式 UI",
+  "description": "真一盲派八字排盘系统 v2 UI：真一盲派时间边界、大运干支分运、流年流月、第一主功状态重演、根气分层、动态墓库与专业岁运工作台",
   "license": "MIT",
   "keywords": [
     "bazi",

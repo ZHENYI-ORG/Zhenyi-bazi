@@ -1,0 +1,4 @@
+Lucide Icons
+Project: https://lucide.dev
+License: ISC
+Used as a visual reference for the AI entry icon direction in v1.0.16.

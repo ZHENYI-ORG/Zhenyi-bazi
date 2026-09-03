@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /result.html
+Sitemap: https://pcbz.zhenyi.hk/sitemap.xml

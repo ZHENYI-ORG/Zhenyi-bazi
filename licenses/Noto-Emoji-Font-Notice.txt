@@ -1,0 +1,6 @@
+Noto Color Emoji font
+Copyright 2013-2017 Google Inc. and contributors.
+Font Software is distributed under SIL Open Font License 1.1.
+Upstream: https://github.com/googlefonts/noto-emoji
+
+This project only distributes rendered PNG zodiac badges, not the font file.

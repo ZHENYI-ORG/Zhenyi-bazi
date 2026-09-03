@@ -1,0 +1,62 @@
+{
+  "rat": {
+    "animal": "鼠",
+    "unicode": "🐀",
+    "file": "rat.png"
+  },
+  "ox": {
+    "animal": "牛",
+    "unicode": "🐂",
+    "file": "ox.png"
+  },
+  "tiger": {
+    "animal": "虎",
+    "unicode": "🐅",
+    "file": "tiger.png"
+  },
+  "rabbit": {
+    "animal": "兔",
+    "unicode": "🐇",
+    "file": "rabbit.png"
+  },
+  "dragon": {
+    "animal": "龙",
+    "unicode": "🐉",
+    "file": "dragon.png"
+  },
+  "snake": {
+    "animal": "蛇",
+    "unicode": "🐍",
+    "file": "snake.png"
+  },
+  "horse": {
+    "animal": "马",
+    "unicode": "🐎",
+    "file": "horse.png"
+  },
+  "goat": {
+    "animal": "羊",
+    "unicode": "🐐",
+    "file": "goat.png"
+  },
+  "monkey": {
+    "animal": "猴",
+    "unicode": "🐒",
+    "file": "monkey.png"
+  },
+  "rooster": {
+    "animal": "鸡",
+    "unicode": "🐓",
+    "file": "rooster.png"
+  },
+  "dog": {
+    "animal": "狗",
+    "unicode": "🐕",
+    "file": "dog.png"
+  },
+  "pig": {
+    "animal": "猪",
+    "unicode": "🐖",
+    "file": "pig.png"
+  }
+}

@@ -1,0 +1,135 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Zhenyi Blind Judgment Rule DSL v1",
+    "type": "object",
+    "required": [
+        "id",
+        "version",
+        "title",
+        "school",
+        "status",
+        "evidence_grade",
+        "when",
+        "result",
+        "source_refs"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "version": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "school": {
+            "type": "string"
+        },
+        "status": {
+            "enum": [
+                "verified",
+                "school_specific",
+                "case_only",
+                "disputed"
+            ]
+        },
+        "evidence_grade": {
+            "enum": [
+                "S",
+                "A",
+                "B",
+                "C"
+            ]
+        },
+        "scope": {
+            "type": "array",
+            "items": {
+                "enum": [
+                    "original",
+                    "dayun",
+                    "liunian",
+                    "career",
+                    "wealth",
+                    "relationship",
+                    "family",
+                    "general"
+                ]
+            }
+        },
+        "when": {
+            "type": "object",
+            "properties": {
+                "all": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "any": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "none": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "counter": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        "result": {
+            "type": "object"
+        },
+        "priority": {
+            "type": "integer"
+        },
+        "source_refs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "file_name",
+                    "source_type"
+                ],
+                "properties": {
+                    "file_id": {
+                        "type": "string"
+                    },
+                    "file_name": {
+                        "type": "string"
+                    },
+                    "chapter": {
+                        "type": "string"
+                    },
+                    "locator": {
+                        "type": "string"
+                    },
+                    "source_type": {
+                        "enum": [
+                            "core_book",
+                            "system_course",
+                            "lecture_notes",
+                            "internal_engineering"
+                        ]
+                    }
+                }
+            }
+        },
+        "engineering_only": {
+            "type": "boolean"
+        },
+        "notes": {
+            "type": "string"
+        }
+    }
+}

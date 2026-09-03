@@ -1,0 +1,131 @@
+[
+  {
+    "id": "source-core-001",
+    "gender": "female",
+    "pillars": [
+      "壬寅",
+      "戊申",
+      "戊子",
+      "丙辰"
+    ],
+    "source": "匿名核心命例 01：四柱入手命例：日干无功，日支子入申子辰三合局，申金食神冲制寅木七杀。",
+    "expected": {
+      "primary_title": "食伤制杀",
+      "primary_status": "effective",
+      "gong_direction": "forward"
+    }
+  },
+  {
+    "id": "source-core-002",
+    "gender": "male",
+    "pillars": [
+      "癸卯",
+      "庚申",
+      "甲寅",
+      "辛未"
+    ],
+    "source": "匿名核心命例 02：四柱入手命例：日干无功，日支被七杀申冲，寅入未墓也没有取得能力，原文判断整个四柱没有什么功。",
+    "expected": {
+      "primary_type": "xiang_fallback",
+      "no_effective_standard_gong": true
+    }
+  },
+  {
+    "id": "source-core-003",
+    "gender": "male",
+    "pillars": [
+      "癸卯",
+      "丁巳",
+      "丁巳",
+      "乙巳"
+    ],
+    "source": "匿名核心命例 03：四柱入手命例：从做功角度没有刑冲克穿墓合，需转象法理解。",
+    "expected": {
+      "primary_type": "xiang_fallback",
+      "no_effective_standard_gong": true
+    }
+  },
+  {
+    "id": "source-core-004",
+    "gender": "female",
+    "pillars": [
+      "丁巳",
+      "丙午",
+      "癸亥",
+      "壬子"
+    ],
+    "source": "匿名核心命例 04：正向做功例：日时主位比劫为体，子午冲、巳亥冲，以主位之体取得年月宾位财。",
+    "expected": {
+      "primary_title": "比劫制财",
+      "primary_status": "effective",
+      "gong_direction": "forward"
+    }
+  },
+  {
+    "id": "source-core-005",
+    "gender": "male",
+    "pillars": [
+      "甲子",
+      "丙子",
+      "辛巳",
+      "丙申"
+    ],
+    "source": "匿名核心命例 05：反向做功例：年月子水食神为体，与时上申金成党，宾位之体制主位巳火官星，伤官制官。",
+    "expected": {
+      "primary_title_contains": "制官",
+      "primary_status": "effective",
+      "gong_direction": "reverse"
+    }
+  },
+  {
+    "id": "source-core-006",
+    "gender": "male",
+    "pillars": [
+      "辛卯",
+      "丁酉",
+      "庚午",
+      "丙子"
+    ],
+    "source": "匿名核心命例 06：功量命例：子水伤官制主位午火官星，之后还有午/丁制酉、酉/辛制卯的连续制局。",
+    "expected": {
+      "primary_title": "食伤制官",
+      "primary_status": "effective"
+    }
+  },
+  {
+    "id": "source-core-007",
+    "gender": "male",
+    "pillars": [
+      "丁亥",
+      "庚戌",
+      "己巳",
+      "庚午"
+    ],
+    "source": "匿名核心命例 07：功量命例：原局火与燥土成势，戌克亥、巳冲亥、丁亥自合共同制亥水财。",
+    "expected": {
+      "primary_title_contains": "成势制财",
+      "primary_status": "effective",
+      "gong_direction": "forward",
+      "qishi_contains": [
+        "火",
+        "土"
+      ]
+    }
+  },
+  {
+    "id": "source-core-008",
+    "gender": "male",
+    "pillars": [
+      "壬寅",
+      "戊申",
+      "丙申",
+      "壬辰"
+    ],
+    "source": "匿名核心命例 08：功量命例：主位坐财，申辰一党，申去制寅，财星做功。",
+    "expected": {
+      "primary_title_contains": "制印",
+      "primary_status": "effective",
+      "gong_direction": "forward"
+    }
+  }
+]

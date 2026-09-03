@@ -1,12 +1,12 @@
 import rulesJson from '../data/shensha-rules.json';
+import nayinRows from '../data/nayin.json';
 
 type Pillar = {name:string;gan:string;zhi:string;ganzhi:string;nayin:string|null;wuxing:string|null};
 type Rule = {id:number;name:string;main:string;tags:string;sex:string;data:Record<string,any>};
 const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
 const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
 const WUXING=['金','木','水','火','土'];
-const NAYIN:Record<string,string>={
-'甲子':'海中金','乙丑':'海中金','丙寅':'炉中火','丁卯':'炉中火','戊辰':'大林木','己巳':'大林木','庚午':'路旁土','辛未':'路旁土','壬申':'剑锋金','癸酉':'剑锋金','甲戌':'山头火','乙亥':'山头火','丙子':'涧下水','丁丑':'涧下水','戊寅':'城头土','己卯':'城头土','庚辰':'白蜡金','辛巳':'白蜡金','壬午':'杨柳木','癸未':'杨柳木','甲申':'泉中水','乙酉':'泉中水','丙戌':'屋上土','丁亥':'屋上土','戊子':'霹雳火','己丑':'霹雳火','庚寅':'松柏木','辛卯':'松柏木','壬辰':'长流水','癸巳':'长流水','甲午':'砂中金','乙未':'砂中金','丙申':'山下火','丁酉':'山下火','戊戌':'平地木','己亥':'平地木','庚子':'壁上土','辛丑':'壁上土','壬寅':'金箔金','癸卯':'金箔金','甲辰':'覆灯火','乙巳':'覆灯火','丙午':'天河水','丁未':'天河水','戊申':'大驿土','己酉':'大驿土','庚戌':'钗钏金','辛亥':'钗钏金','壬子':'桑柘木','癸丑':'桑柘木','甲寅':'大溪水','乙卯':'大溪水','丙辰':'沙中土','丁巳':'沙中土','戊午':'天上火','己未':'天上火','庚申':'石榴木','辛酉':'石榴木','壬戌':'大海水','癸亥':'大海水'};
+const NAYIN:Record<string,string>=Object.fromEntries(Object.entries(nayinRows as unknown as Record<string,[string,number,number]>).map(([pillar,row])=>[pillar,row[0]]));
 
 export class ShenShaMatcher {
   private rules=rulesJson as Rule[];
@@ -16,7 +16,7 @@ export class ShenShaMatcher {
     for(const rule of this.rules){if(!this.genderAllowed(String(rule.sex),gender))continue;let matched=this.matchRule(rule,pillars,dayGanWuxing,wuxingSource);if(!matched.length)continue;if(!includeDuplicates){const seen=new Set<string>();matched=matched.filter(r=>{const k=JSON.stringify(r);if(seen.has(k))return false;seen.add(k);return true;});}results.push({id:rule.id,name:rule.name,main:rule.main,tags:rule.tags,sex:rule.sex,matches:matched});}
     return results.sort((a,b)=>a.id-b.id);
   }
-  private genderAllowed(ruleSex:string,gender:string){return ruleSex==='0'||gender==='0'||ruleSex===gender;}
+  private genderAllowed(ruleSex:string,gender:string){return ruleSex==='0'||ruleSex===gender;}
   private normalizePillars(bazi:Record<string,any>,extra:Record<string,any>):Record<string,Pillar>{const out:Record<string,Pillar>={};for(const [name,item] of Object.entries({...bazi,...extra})){const gan=String((item as any)?.gan??'').trim(),zhi=String((item as any)?.zhi??'').trim();if(!this.isGan(gan)||!this.isZhi(zhi))throw new Error(`柱 ${name} 的 gan/zhi 不合法：${gan}${zhi}`);const ganzhi=gan+zhi,nayin=NAYIN[ganzhi]??null;out[name]={name,gan,zhi,ganzhi,nayin,wuxing:nayin?this.nayinWuxing(nayin):null};}return out;}
   private matchRule(rule:Rule,pillars:Record<string,Pillar>,dayGanWuxing:string|null,wuxingSource:string):any[]{
     const data=rule.data,keys=Object.keys(data);if(!keys.length)return [];let type=this.detectRuleType(keys);if(type==='ganzhi_exact')type=this.refineGanzhiSubtype(data);let hits:any[]=[];const main=this.resolveMainSources(rule,pillars),allowedOrig=this.resolveAllowedTargets(rule);let allowedTargets=[...allowedOrig];

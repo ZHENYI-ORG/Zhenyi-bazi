@@ -1,0 +1,111 @@
+{
+  "version": "2.0.0",
+  "policy": "公开仓库仅保留匿名来源等级、资料类型与研究用途；不公开具体书名、作者、课程名或内部资料文件名。工程规则必须标记 engineering_only，不伪装成传统原法。",
+  "sources": [
+    {
+      "id": "SRC-CORE-A",
+      "name": "核心资料 A",
+      "grade": "S",
+      "type": "core_material",
+      "focus": [
+        "宾主",
+        "体用",
+        "功神废神",
+        "做功方式",
+        "功量",
+        "象法"
+      ]
+    },
+    {
+      "id": "SRC-CORE-B",
+      "name": "核心资料 B",
+      "grade": "S",
+      "type": "core_material",
+      "focus": [
+        "宾主",
+        "体用",
+        "干支互通",
+        "虚实",
+        "能量效率",
+        "原身/禄",
+        "反客为主"
+      ]
+    },
+    {
+      "id": "SRC-CORE-C",
+      "name": "核心资料 C",
+      "grade": "S",
+      "type": "core_material",
+      "focus": [
+        "十神意向",
+        "合冲细分",
+        "应期",
+        "反客为主",
+        "冲墓语义"
+      ]
+    },
+    {
+      "id": "SRC-SYSTEM-A",
+      "name": "系统资料 A",
+      "grade": "A",
+      "type": "system_material",
+      "focus": [
+        "做功入手",
+        "气势",
+        "主辅功神",
+        "交运计数",
+        "干支互通",
+        "墓库"
+      ]
+    },
+    {
+      "id": "SRC-SYSTEM-B",
+      "name": "系统资料 B",
+      "grade": "A",
+      "type": "system_material",
+      "focus": [
+        "正局",
+        "反局",
+        "日干日支意向",
+        "流年身份顺序"
+      ]
+    },
+    {
+      "id": "SRC-NOTE-A",
+      "name": "研究笔记 A",
+      "grade": "B",
+      "type": "research_note",
+      "focus": [
+        "冲法",
+        "墓库",
+        "制法细化"
+      ]
+    },
+    {
+      "id": "SRC-SYSTEM-C",
+      "name": "系统资料 C",
+      "grade": "A",
+      "type": "system_material",
+      "focus": [
+        "冲法",
+        "十神意向",
+        "应期"
+      ]
+    },
+    {
+      "id": "SRC-NOTE-B",
+      "name": "研究笔记 B",
+      "grade": "B",
+      "type": "research_note",
+      "focus": [
+        "共象",
+        "化象",
+        "墓象",
+        "换象",
+        "带象",
+        "借象",
+        "局象"
+      ]
+    }
+  ]
+}

@@ -3,14 +3,31 @@ import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import path from 'node:path';
 import {computePaipan} from './api';
+import {BlindJudgmentEngine} from './core/judgment/BlindJudgmentEngine';
+import {LocalChartAdapter} from './core/LocalChartAdapter';
 
 const PORT=Number(process.env.PORT||8787),HOST=process.env.HOST||'0.0.0.0',PUBLIC_DIR=path.resolve(process.cwd(),'public');
-const TYPES:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.svg':'image/svg+xml'};
+const TYPES:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml'};
 function json(res:http.ServerResponse,status:number,body:any){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(body));}
-async function body(req:http.IncomingMessage){let text='';for await(const chunk of req){text+=chunk;if(text.length>1_000_000)throw new Error('请求数据过大');}return text?JSON.parse(text):null;}
+async function body(req:http.IncomingMessage){let text='';for await(const chunk of req){text+=chunk;if(text.length>5_000_000)throw new Error('请求数据过大');}return text?JSON.parse(text):null;}
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
+    if(url.pathname==='/api/liuyue'){
+      if(req.method!=='POST')return json(res,405,{ok:false,message:'仅支持 POST 请求'});
+      let input:any;try{input=await body(req);}catch{return json(res,400,{ok:false,message:'请求数据格式无效'});}
+      const year=Number(input?.year),dayStem=String(input?.day_stem??input?.dayStem??'').trim();
+      if(!Number.isInteger(year)||year<1600||year>2200)return json(res,422,{ok:false,message:'流年年份应在 1600—2200 之间'});
+      if(!'甲乙丙丁戊己庚辛壬癸'.includes(dayStem)||dayStem.length!==1)return json(res,422,{ok:false,message:'缺少有效日主天干'});
+      try{const adapter=new LocalChartAdapter();return json(res,200,{ok:true,data:{year,months:adapter.buildFlowMonths(year,dayStem),rule:'十二节令切换 · 五虎遁月干 · 流月只作月份定位'}});}catch(e:any){return json(res,422,{ok:false,message:e?.message??String(e)});}
+    }
+    if(url.pathname==='/api/judgment'){
+      if(req.method!=='POST')return json(res,405,{ok:false,message:'仅支持 POST 请求'});
+      let input:any;try{input=await body(req);}catch{return json(res,400,{ok:false,message:'请求数据格式无效'});}
+      const chart=input?.chart??input?.data??input;
+      if(!chart||typeof chart!=='object'||Array.isArray(chart)||!chart.bazi)return json(res,422,{ok:false,message:'缺少有效命盘数据'});
+      try{const engine=new BlindJudgmentEngine(),nowRaw=input?.now??input?.at??null;let options:any={};if(nowRaw){const dt=new Date(nowRaw);if(Number.isNaN(dt.getTime()))return json(res,422,{ok:false,message:'岁运定位时间格式无效'});options.now=dt.toISOString();}return json(res,200,{ok:true,data:engine.analyze(chart,options)});}catch(e:any){return json(res,422,{ok:false,message:e?.message??String(e)});}
+    }
     if(url.pathname==='/api/paipan'||url.pathname==='/api.php'){
       if(req.method!=='POST')return json(res,405,{ok:false,message:'仅支持 POST 请求'});
       let input:any;try{input=await body(req);}catch{return json(res,400,{ok:false,message:'请求数据格式无效'});}
